@@ -9,8 +9,8 @@
     "render:deploy": "node scripts/render-deploy.mjs",
     "build:deploy": "npm run build && npm run render:deploy",
     "start": "node --env-file-if-exists=.env dist/index.js",
-    "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\"",
-    "lint:fix": "eslint \"src/**/*.ts\" \"test/**/*.ts\" --fix",
+    "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\" \"scripts/*.mjs\"",
+    "lint:fix": "eslint \"src/**/*.ts\" \"test/**/*.ts\" \"scripts/*.mjs\" --fix",
     "test": "tsx --test test/**/*.test.ts",
     "prepare": "husky"
   },

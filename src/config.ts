@@ -12,6 +12,16 @@ export const FOUNDRY_DATA_DIR = process.env.FOUNDRY_DATA_DIR ?? resolve(homedir(
 // only enable on trusted networks.
 export const ALLOW_EVAL = process.env.ALLOW_EVAL === '1';
 
+// Optional bearer token for public deployments. When set, MCP HTTP requests
+// must include Authorization: Bearer <token>, and the Foundry bridge URL must
+// include ?token=<token>. Leave unset for trusted localhost-only deployments.
+export const MCP_AUTH_TOKEN = process.env.MCP_AUTH_TOKEN ?? '';
+
+// The current Foundry API Bridge module appends its pk_... key as
+// ?apiKey=... to the configured MCP WebSocket URL. Keep this separate from
+// the bearer token used by MCP clients such as Codex.
+export const MCP_BRIDGE_API_KEY = process.env.MCP_BRIDGE_API_KEY ?? '';
+
 // Comma-separated list of compendium pack ids to pre-fetch on module
 // connection. Serves subsequent search/document requests for these
 // packs from an in-memory cache, sidestepping the per-item WS

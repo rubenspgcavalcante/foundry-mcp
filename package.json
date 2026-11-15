@@ -6,9 +6,12 @@
   "scripts": {
     "dev": "tsx --env-file-if-exists=.env src/index.ts",
     "build": "tsc",
+    "typecheck:scripts": "tsc -p tsconfig.scripts.json",
+    "render:deploy": "tsx scripts/render-deploy.ts",
+    "build:deploy": "npm run build && npm run typecheck:scripts && npm run render:deploy",
     "start": "node --env-file-if-exists=.env dist/index.js",
-    "lint": "eslint \"src/**/*.ts\"",
-    "lint:fix": "eslint \"src/**/*.ts\" --fix",
+    "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\" \"scripts/*.ts\"",
+    "lint:fix": "eslint \"src/**/*.ts\" \"test/**/*.ts\" \"scripts/*.ts\" --fix",
     "test": "tsx --test test/**/*.test.ts",
     "prepare": "husky"
   },
@@ -34,6 +37,14 @@
   },
   "lint-staged": {
     "src/**/*.ts": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "test/**/*.ts": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "scripts/**/*.ts": [
       "eslint --fix",
       "prettier --write"
     ],

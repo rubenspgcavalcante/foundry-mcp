@@ -1,7 +1,41 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod/v4';
-import { foundryTool } from '../bridge.js';
+import { foundryTool, sendCommand } from '../bridge.js';
+
+export type CompendiumSearchCommand = (type: string, params: Record<string, unknown>) => Promise<unknown>;
+
+function isUnknownCommandError(err: unknown): boolean {
+  const message = err instanceof Error ? err.message : String(err);
+  return /no handler|unknown command|not supported/i.test(message);
+}
+
+/**
+ * Search using the command names and parameter shapes from the current
+ * Foundry API Bridge module, while retaining compatibility with the older
+ * self-hosted bridge that exposed find-in-compendium.
+ */
+export async function searchCompendium(
+  command: CompendiumSearchCommand,
+  options: { name: string; packId?: string; documentType?: string; limit?: number },
+): Promise<unknown> {
+  const { name, packId, documentType, limit } = options;
+  const modernType = packId ? 'search-compendium' : 'search-compendiums';
+  const modernParams = packId
+    ? { packId, query: name, ...(limit !== undefined ? { limit } : {}) }
+    : {
+        query: name,
+        ...(documentType !== undefined ? { type: documentType } : {}),
+        ...(limit !== undefined ? { limit } : {}),
+      };
+
+  try {
+    return await command(modernType, modernParams);
+  } catch (err) {
+    if (!isUnknownCommandError(err)) throw err;
+    return command('find-in-compendium', { name, packId, documentType, limit });
+  }
+}
 
 export function registerCompendiumTools(mcp: McpServer): void {
   mcp.registerTool(
@@ -20,8 +54,15 @@ export function registerCompendiumTools(mcp: McpServer): void {
         limit: z.number().int().positive().optional().describe('Max results (default 10, hard-capped at 100)'),
       },
     },
-    async ({ name, packId, documentType, limit }): Promise<CallToolResult> =>
-      foundryTool('find-in-compendium', { name, packId, documentType, limit }),
+    async ({ name, packId, documentType, limit }): Promise<CallToolResult> => {
+      try {
+        const result = await searchCompendium(sendCommand, { name, packId, documentType, limit });
+        return { content: [{ type: 'text', text: JSON.stringify(result) }] };
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        return { content: [{ type: 'text', text: `Error: ${message}` }], isError: true };
+      }
+    },
   );
 
   mcp.registerTool(

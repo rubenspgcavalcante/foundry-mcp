@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { sendCommand } from '../../bridge.js';
+import { searchCompendium } from '../../tools/compendium.js';
 import { compendiumCache } from '../compendium-cache-singleton.js';
 import {
   compendiumSearchQuery,
@@ -29,15 +30,13 @@ export function registerCompendiumRoutes(app: FastifyInstance): void {
     });
     if (cached) return cached;
 
-    return sendCommand('find-in-compendium', {
+    // The v8.18 bridge uses search-compendium(s); the adapter retains
+    // find-in-compendium fallback support for older self-hosted modules.
+    const singlePackId = packId?.length === 1 ? packId[0] : undefined;
+    return searchCompendium(sendCommand, {
       name: q ?? '',
-      packId,
+      packId: singlePackId,
       documentType,
-      traits,
-      anyTraits,
-      sources,
-      ancestrySlug,
-      maxLevel,
       limit,
     });
   });

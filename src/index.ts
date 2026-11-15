@@ -2,7 +2,7 @@ import { createServer, type IncomingMessage, type ServerResponse } from 'node:ht
 import { randomUUID } from 'node:crypto';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
-import { PORT, HOST } from './config.js';
+import { MCP_AUTH_TOKEN, MCP_BRIDGE_API_KEY, PORT, HOST } from './config.js';
 import { wss, isFoundryConnected } from './bridge.js';
 import { log } from './logger.js';
 import { registerTools } from './tools/index.js';
@@ -23,6 +23,19 @@ registerCompendiumCacheWarming();
 // ---------------------------------------------------------------------------
 
 const sessions = new Map<string, StreamableHTTPServerTransport>();
+
+function hasBearerAuth(req: IncomingMessage): boolean {
+  return !MCP_AUTH_TOKEN || req.headers.authorization === `Bearer ${MCP_AUTH_TOKEN}`;
+}
+
+function hasBridgeAuth(req: IncomingMessage): boolean {
+  if (!MCP_AUTH_TOKEN) return true;
+  const url = new URL(req.url ?? '/', 'http://localhost');
+  return (
+    url.searchParams.get('token') === MCP_AUTH_TOKEN ||
+    (MCP_BRIDGE_API_KEY !== '' && url.searchParams.get('apiKey') === MCP_BRIDGE_API_KEY)
+  );
+}
 
 async function createSession(): Promise<StreamableHTTPServerTransport> {
   const mcp = new McpServer({ name: 'foundry-mcp', version: '0.1.0' });
@@ -60,6 +73,12 @@ const httpServer = createServer(async (req: IncomingMessage, res: ServerResponse
   // MCP Streamable HTTP endpoint. Previously `/` was also accepted as a
   // convenience alias; dropped now so the SPA can live at the root path.
   if (path === '/mcp') {
+    if (!hasBearerAuth(req)) {
+      res.writeHead(401, { 'Content-Type': 'application/json', 'WWW-Authenticate': 'Bearer' });
+      res.end(JSON.stringify({ error: 'Unauthorized' }));
+      return;
+    }
+
     const sessionId = req.headers['mcp-session-id'] as string | undefined;
     let transport: StreamableHTTPServerTransport;
 
@@ -114,7 +133,7 @@ const httpServer = createServer(async (req: IncomingMessage, res: ServerResponse
 });
 
 httpServer.on('upgrade', (req, socket, head) => {
-  if (req.url?.startsWith('/foundry')) {
+  if (req.url?.startsWith('/foundry') && hasBridgeAuth(req)) {
     wss.handleUpgrade(req, socket, head, (ws) => wss.emit('connection', ws, req));
   } else {
     socket.destroy();

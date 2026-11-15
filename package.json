@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "tsx --env-file-if-exists=.env src/index.ts",
     "build": "tsc",
+    "render:deploy": "node scripts/render-deploy.mjs",
+    "build:deploy": "npm run build && npm run render:deploy",
     "start": "node --env-file-if-exists=.env dist/index.js",
     "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint:fix": "eslint \"src/**/*.ts\" \"test/**/*.ts\" --fix",

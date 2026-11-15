@@ -3,7 +3,15 @@
 This memo describes how to connect to the Hostinger Foundry server without
 putting the SSH password in `.bashrc`, a script, or shell history.
 
-Replace `YOUR_SERVER_IP` with your server address in the commands below.
+Copy `.env.deploy.example` to `.env.deploy.local` and keep the local file
+private. It holds your domain, server address, and deployment paths.
+
+```bash
+cp .env.deploy.example .env.deploy.local
+${EDITOR:-nano} .env.deploy.local
+```
+
+Use the `DEPLOY_SERVER_IP` value from that file in the commands below.
 
 ## Store the password in Seahorse / Secret Service
 

@@ -5,16 +5,16 @@ Wants=foundry.service
 
 [Service]
 Type=simple
-WorkingDirectory=/opt/foundry-mcp
-ExecStart=/root/.nvm/versions/node/v24.18.0/bin/node /opt/foundry-mcp/dist/index.js
+WorkingDirectory={{DEPLOY_APP_DIR}}
+ExecStart={{DEPLOY_NODE_PATH}} {{DEPLOY_APP_DIR}}/dist/index.js
 Restart=always
 RestartSec=5
-User=root
+User={{DEPLOY_SERVICE_USER}}
 Environment=NODE_ENV=production
 EnvironmentFile=-/etc/foundry-mcp.env
 Environment=HOST=127.0.0.1
 Environment=PORT=8765
-Environment=FOUNDRY_DATA_DIR=/opt/foundry-data/Data
+Environment=FOUNDRY_DATA_DIR={{DEPLOY_FOUNDRY_DATA_DIR}}
 
 [Install]
 WantedBy=multi-user.target

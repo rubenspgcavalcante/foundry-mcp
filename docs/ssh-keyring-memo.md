@@ -157,7 +157,7 @@ npm ci
 npm run build:deploy
 ```
 
-This builds the server and runs [render-deploy.mjs](../scripts/render-deploy.mjs).
+This builds the server and runs [render-deploy.ts](../scripts/render-deploy.ts).
 It reads `.env.deploy.local` and creates ignored files in `dist/deploy/`:
 
 - `foundry.nginx` with the real domain and certificate paths;

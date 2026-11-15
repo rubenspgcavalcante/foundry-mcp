@@ -14,7 +14,7 @@ export default tseslint.config(
           // Tests intentionally live outside the production tsconfig's
           // `rootDir`/`include` boundary, but should still get typed linting
           // in VS Code and when linting the test suite.
-          allowDefaultProject: ["test/*.ts", "scripts/*.mjs"],
+          allowDefaultProject: ["test/*.ts", "scripts/*.ts"],
         },
         tsconfigRootDir: import.meta.dirname,
       },
@@ -28,7 +28,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ["scripts/*.mjs"],
+    files: ["scripts/*.ts"],
     languageOptions: {
       globals: {
         console: "readonly",

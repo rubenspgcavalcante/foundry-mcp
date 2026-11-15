@@ -1,0 +1,20 @@
+[Unit]
+Description=Foundry MCP bridge
+After=network.target foundry.service
+Wants=foundry.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/foundry-mcp
+ExecStart=/root/.nvm/versions/node/v24.18.0/bin/node /opt/foundry-mcp/dist/index.js
+Restart=always
+RestartSec=5
+User=root
+Environment=NODE_ENV=production
+EnvironmentFile=-/etc/foundry-mcp.env
+Environment=HOST=127.0.0.1
+Environment=PORT=8765
+Environment=FOUNDRY_DATA_DIR=/opt/foundry-data/Data
+
+[Install]
+WantedBy=multi-user.target

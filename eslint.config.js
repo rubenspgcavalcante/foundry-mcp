@@ -10,7 +10,12 @@ export default tseslint.config(
   {
     languageOptions: {
       parserOptions: {
-        projectService: true,
+        projectService: {
+          // Tests intentionally live outside the production tsconfig's
+          // `rootDir`/`include` boundary, but should still get typed linting
+          // in VS Code and when linting the test suite.
+          allowDefaultProject: ["test/*.ts"],
+        },
         tsconfigRootDir: import.meta.dirname,
       },
     },
